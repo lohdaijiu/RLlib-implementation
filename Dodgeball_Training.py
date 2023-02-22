@@ -30,7 +30,7 @@ from ray.rllib.algorithms.ppo import PPOConfig
 from ray.rllib.env.wrappers.unity3d_env import Unity3DEnv
 from ray.rllib.utils.test_utils import check_learning_achieved
 from ray.rllib.policy.policy import PolicySpec
-from gymnasium.spaces import Box, MultiDiscrete, Tuple as TupleSpace
+from gym.spaces import Box, MultiDiscrete, Tuple as TupleSpace
 
 ray.shutdown()
 parser = argparse.ArgumentParser()
@@ -99,7 +99,7 @@ if __name__ == "__main__":
     # Get policies (different agent types; "behaviors" in MLAgents) and
     # the mappings from individual agents to Policies.
     policies =  {
-                "DodgeballAgent": PolicySpec(
+                "DodgeballAgent_Purple": PolicySpec(
                     observation_space=TupleSpace(
                 [
                     Box(float("-inf"), float("inf"), (3,8)),
@@ -115,6 +115,22 @@ if __name__ == "__main__":
                         MultiDiscrete([2,2])
                     ]
                 )),
+                "DodgeballAgent_Blue": PolicySpec(
+                    observation_space=TupleSpace(
+                [
+                    Box(float("-inf"), float("inf"), (3,8)),
+                    Box(float("-inf"), float("inf"), (738,)),
+                    Box(float("-inf"), float("inf"), (252,)),
+                    Box(float("-inf"), float("inf"), (36,)),
+                    Box(float("-inf"), float("inf"), (378,)),
+                    Box(float("-inf"), float("inf"), (20,))
+                ]
+            ),
+                    action_space=TupleSpace([
+                        Box(-1.0, 1.0, (3,), dtype = np.float32),
+                        MultiDiscrete([2,2])
+                    ]
+                ))
             }
             
 
@@ -146,7 +162,7 @@ if __name__ == "__main__":
             model={"fcnet_hiddens": [512, 512]},
         )
         .multi_agent(policies=policies, 
-                     policy_mapping_fn=lambda agent_id, *args, **kwargs: "DodgeballAgent",)
+            policy_mapping_fn=lambda agent_id, *args, **kwargs: "DodgeballAgent_Blue" if "blue" in agent_id else "DodgeballAgent_Purple")
         # Use GPUs iff `RLLIB_NUM_GPUS` env var set to > 0.
         .resources(num_gpus=1)
     )
